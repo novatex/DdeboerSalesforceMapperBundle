@@ -8,5 +8,6 @@ namespace Ddeboer\Salesforce\MapperBundle;
 class Events
 {
     const beforeSave      = 'salesforce.mapper.before_save';
-    const afterSave       = 'salesforce.mapper_after_save';
+    const afterSave       = 'salesforce.mapper.after_save';
+    const saveError       = 'salesforce.mapper.save_error';
 }

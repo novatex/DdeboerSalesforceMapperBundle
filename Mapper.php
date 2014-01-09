@@ -2,6 +2,8 @@
 
 namespace Ddeboer\Salesforce\MapperBundle;
 
+use Ddeboer\Salesforce\MapperBundle\Event\AfterSaveEvent;
+use Ddeboer\Salesforce\MapperBundle\Event\SaveErrorEvent;
 use Phpforce\SoapClient\ClientInterface;
 use Phpforce\SoapClient\Result;
 use Ddeboer\Salesforce\MapperBundle\Annotation\AnnotationReader;
@@ -291,7 +293,17 @@ class Mapper
             $reflProperty = $reflClass->getProperty('id');
             $reflProperty->setAccessible(true);
 
-            $saveResults = $this->client->create($sObjects, $objectName);
+            try {
+                $saveResults = $this->client->create($sObjects, $objectName);
+            } catch (\SoapFault $e) {
+                if ($this->eventDispatcher) {
+                    $event = new SaveErrorEvent($e);
+                    $this->eventDispatcher->dispatch(Events::saveError, $event);
+                } else {
+                    throw $e;
+                }
+            }
+
             for ($i = 0; $i < count($saveResults); $i++) {
                 $newId = $saveResults[$i]->getId();
                 $model = $modelsWithoutId[$objectName][$i];
@@ -303,6 +315,11 @@ class Mapper
 
         foreach ($objectsToBeUpdated as $objectName => $sObjects) {
             $results[] = $this->client->update($sObjects, $objectName);
+        }
+
+        if ($this->eventDispatcher) {
+            $event = new AfterSaveEvent($results);
+            $this->eventDispatcher->dispatch(Events::afterSave, $event);
         }
 
         return $results;

@@ -9,7 +9,7 @@ class BeforeSaveEvent extends Event
     private $objects = array();
 
     /**
-     * Construt event
+     * Construct event
      *
      * @param array $objects    Array of Salesforce objects that will be
      *                          saved to Salesforce
@@ -22,7 +22,7 @@ class BeforeSaveEvent extends Event
     /**
      * Get objects that will be saved to Salesforce
      *
-     * @return type
+     * @return array
      */
     public function getObjects()
     {
